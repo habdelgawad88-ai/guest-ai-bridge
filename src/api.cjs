@@ -69,6 +69,9 @@ async function askAnonymousOpenAI(p,message,{fetchFn=fetch,dnsFn=publicDnsVerifi
   const body=await response.text();
   if(body.length>524288)return {...common,status:'oversized_response',reply:null};
   let data;try{data=JSON.parse(body)}catch{return {...common,status:'invalid_response',reply:null}};
+  // A partial, filtered or tool-call completion is not a successful text answer.
+  const finish=data?.choices?.[0]?.finish_reason;
+  if(typeof finish==='string'&&finish!=='stop')return {...common,status:'incomplete_response',reply:null,finish_reason:finish.slice(0,80)};
   // When a concrete model was selected, refuse to claim another (or unknown) model answered.
   if(requestedModel!==p.model&&data?.model!==requestedModel)return {...common,status:'model_mismatch',reply:null,requested_model:requestedModel,reported_model:data?.model||null};
   const reply=extractContent(data?.choices?.[0]?.message?.content);
