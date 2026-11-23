@@ -1,0 +1,31 @@
+name: Apply verified ChatGPT fix (Node 22)
+on:
+  push:
+    branches:
+      - chatgpt/reject-incomplete-replies
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import pinned ChatGPT patch and run regressions
+        shell: bash
+        env:
+          PATCH_URL: https://per-fisheries-environment-kathy.trycloudflare.com/chatgpt-completion-fix.zip
+          PATCH_SHA256: 37f92ed1db0993d69f67b8f1cc9da625473a48d164c60db79db2dd3e06952172
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 3 "$PATCH_URL" -o patch.zip
+          echo "$PATCH_SHA256  patch.zip" | sha256sum -c -
+          unzip -o -q patch.zip -d .
+          node --test test/*.test.cjs
+          rm patch.zip .github/workflows/apply-chatgpt-fix.yml .github/workflows/apply-chatgpt-fix-node22.yml
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "fix: reject incomplete AI replies (ChatGPT-assisted)"
+          git push origin "HEAD:$GITHUB_REF_NAME"
