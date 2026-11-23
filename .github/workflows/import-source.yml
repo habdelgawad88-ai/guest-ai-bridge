@@ -1,0 +1,30 @@
+name: Import audited Guest AI Bridge source
+on:
+  workflow_dispatch:
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import pinned source archive
+        shell: bash
+        env:
+          SOURCE_URL: https://shoppers-character-might-card.trycloudflare.com/guest-ai-bridge-v0.7.0-public-source.zip
+          EXPECTED_SHA256: 620d6bb66648e875fcfabb22e992744a54ec4642f64dc6d171c29589a8fa393a
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --retry 3 "$SOURCE_URL" -o source.zip
+          echo "$EXPECTED_SHA256  source.zip" | sha256sum --check -
+          unzip -q source.zip -d .source-import
+          cp -a .source-import/guest-ai-bridge/. .
+          rm -rf .source-import source.zip
+          rm -f .github/workflows/import-source.yml
+          git add --all
+          if git diff --cached --quiet; then
+            echo "No source changes to commit"
+          else
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "Publish Guest AI Bridge v0.7.0 source, tests, and developer documentation"
+            git push origin HEAD:main
+          fi
