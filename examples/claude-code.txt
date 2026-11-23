@@ -1,0 +1,7 @@
+# Recommended personal Claude Code setup from extracted Guest AI Bridge folder
+node setup-claude.cjs --dry-run
+node setup-claude.cjs
+
+# Manual alternative (install script is preferred because it copies files into stable location)
+# claude mcp add --transport stdio --scope user guest-ai-bridge -- node /ABS/PATH/guest-ai-bridge/src/mcp-personal.cjs
+# Check inside Claude Code: /mcp

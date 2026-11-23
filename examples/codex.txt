@@ -1,0 +1,6 @@
+# Codex — preferred
+node setup-agents.cjs codex
+codex mcp get guest-ai-bridge --json
+
+# Under the hood, using a stable absolute installed script:
+# codex mcp add guest-ai-bridge -- /ABS/NODE /ABS/HOME/.guest-ai-bridge/app/src/mcp-personal.cjs

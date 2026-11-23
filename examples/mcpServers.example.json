@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "guest-ai-bridge": {
+      "command": "/ABS/PATH/TO/node",
+      "args": ["/ABS/PATH/TO/HOME/.guest-ai-bridge/app/src/mcp-personal.cjs"]
+    }
+  }
+}
