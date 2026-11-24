@@ -1,0 +1,31 @@
+name: Publish Guest AI Bridge Gemini and Claude extensions
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import pinned audited source, run tests, commit
+        shell: bash
+        env:
+          SOURCE_URL: https://ride-rolled-nasa-wiring.trycloudflare.com/Guest_AI_Bridge_Gemini_Claude_v0.8.0-beta.2.zip
+          EXPECTED_SHA256: 40477dc845a2a19785b0980cc5934f9f8a69d22012f539d726a698ac83d42c0b
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "main"
+          curl --fail --location --silent --show-error --retry 3 "$SOURCE_URL" -o guest-bridge.zip
+          echo "$EXPECTED_SHA256  guest-bridge.zip" | sha256sum --check -
+          unzip -q guest-bridge.zip -d .guest-bridge-import
+          cp -a .guest-bridge-import/guest-ai-bridge/. .
+          rm -rf .guest-bridge-import guest-bridge.zip
+          node --test test/*.test.cjs
+          rm -f .github/workflows/import-guest-bridge-gemini-claude.yml
+          git add --all
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "feat: add installable Gemini CLI extension and Claude Code marketplace"
+          git push origin HEAD:main
